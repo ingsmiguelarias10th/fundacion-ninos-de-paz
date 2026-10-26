@@ -8,7 +8,7 @@
  * los datos se guardan solo en este navegador y no se envían correos.
  */
 window.APP_CONFIG = {
-  API_URL: '',
+  API_URL: 'https://script.google.com/macros/s/AKfycbxsgDgtrqCzBJp7FzeRPZ1jBVkcAhyEvptRmD8rFGVCpO6bTbJh2AhxOWI1bHw9J_Xi/exec',
 
   // Solo para el modo demostración. En modo Google Sheets el usuario y la
   // contraseña viven en las propiedades del script, no en este archivo.
