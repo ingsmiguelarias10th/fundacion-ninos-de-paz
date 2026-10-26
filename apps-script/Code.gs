@@ -80,7 +80,8 @@ function doPost(e) {
     const publicas = { login: login_, solicitarCodigo: solicitarCodigo_, restablecer: restablecer_ };
     const privadas = {
       logout: logout_, cuenta: cuenta_, actualizarCuenta: actualizarCuenta_,
-      listar: listar_, obtener: obtener_, guardar: guardar_
+      listar: listar_, obtener: obtener_, guardar: guardar_,
+      eliminar: eliminar_, enlaces: enlaces_
     };
     if (publicas[p.accion]) return salida_({ ok: true, datos: publicas[p.accion](p) });
     if (!privadas[p.accion]) throw new Error('Acción no permitida.');
@@ -371,6 +372,29 @@ function guardar_(p) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function eliminar_(p) {
+  if (!p.id) throw new Error('Falta indicar qué registro eliminar.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const t = tabla_();
+    const r = t.filas.filter(function (x) { return x.id === p.id; })[0];
+    if (!r) throw new Error('No se encontró el registro. Puede que ya se haya eliminado.');
+    ['pdfId', 'fotoId', 'firmaId'].forEach(function (k) { if (r[k]) papelera_(r[k]); });
+    t.sh.deleteRow(r._fila);
+    return {};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function enlaces_() {
+  return {
+    hoja: SpreadsheetApp.getActiveSpreadsheet().getUrl() + '#gid=' + hoja_().getSheetId(),
+    carpeta: carpeta_().getUrl()
+  };
 }
 
 /** Evita que un texto que empieza por =, +, - o @ se interprete como fórmula. */

@@ -72,7 +72,9 @@ const Api = (() => {
     },
     listar: () => llamar('listar'),
     obtener: id => llamar('obtener', { id }),
-    guardar: (registro, pdfBase64) => llamar('guardar', { registro, pdf: pdfBase64 })
+    guardar: (registro, pdfBase64) => llamar('guardar', { registro, pdf: pdfBase64 }),
+    eliminar: id => llamar('eliminar', { id }),
+    enlaces: () => llamar('enlaces')
   };
 
   /* ----------------------------- Modo demostración --------------------------- */
@@ -164,6 +166,17 @@ const Api = (() => {
       }
       escribir(LS_REG, lista);
       return { id: registro.id || lista[0].id, pdfUrl: '' };
+    },
+    async eliminar(id) {
+      exigirSesion();
+      const lista = leer(LS_REG, []);
+      const resto = lista.filter(x => x.id !== id);
+      if (resto.length === lista.length) throw new Error('No se encontró el registro.');
+      escribir(LS_REG, resto);
+      return {};
+    },
+    async enlaces() {
+      return {};
     }
   };
 

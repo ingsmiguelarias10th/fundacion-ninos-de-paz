@@ -4,8 +4,9 @@ Aplicativo web para registrar a los jóvenes de la Fundación Niños de Paz con 
 
 - Inicio de sesión de un único administrador (no se pueden crear cuentas).
 - Recuperación de contraseña con un código enviado al correo asociado.
-- Lista de jóvenes con buscador y paginación.
-- Formulario con todos los apartados de la plantilla: datos del participante con foto, información académica, salud y seguridad, datos del acudiente y autorización con firma.
+- Lista de jóvenes con buscador y paginación. Cada joven se puede ver, editar o eliminar.
+- Botón "Ver hoja de cálculo" que abre la hoja de Google Sheets.
+- Formulario con todos los apartados de la plantilla: datos del participante con foto, información académica, salud y seguridad, datos del acudiente y autorización con firma. La firma se hace en pantalla o se sube como imagen.
 - "Vista previa" muestra la información sobre la plantilla oficial.
 - "Exportar" descarga el PDF y guarda el registro en una hoja de Google Sheets. El PDF, la foto y la firma quedan en una carpeta de Google Drive.
 
@@ -35,7 +36,15 @@ Mientras no se configure la conexión con Google, el sitio funciona en "modo dem
 
 "Cualquier usuario" significa que el sitio puede comunicarse con el script. Los datos siguen protegidos: cada petición exige haber iniciado sesión con la contraseña del administrador, y la hoja y la carpeta de Drive solo las ve el dueño de la cuenta.
 
-Si más adelante cambias `Code.gs`, publica una nueva versión desde "Implementar", "Gestionar implementaciones", editar, "Nueva versión". Así la URL no cambia.
+## Actualizar el script
+
+Cada vez que cambie `apps-script/Code.gs` en este repositorio:
+
+1. Abre el proyecto de Apps Script, borra el código de `Código.gs`, pega el nuevo y guarda.
+2. Ve a "Implementar", "Administrar las implementaciones", pulsa el lápiz y en "Versión" elige "Nueva versión".
+3. Revisa que "Usuarios con acceso" siga en "Cualquier persona" y pulsa "Implementar".
+
+Así la URL no cambia y no hay que tocar `js/config.js`. No uses "Nueva implementación", porque crea otra URL.
 
 ## Si se pierde la contraseña
 

@@ -125,10 +125,16 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="buscar" type="search" placeholder="Buscar por nombre, documento o acudiente..." aria-label="Buscar joven">
         </label>
-        <button type="button" class="btn btn-primario" id="btn-registrar">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          Registrar joven
-        </button>
+        <div class="botones-lista">
+          <a class="btn btn-secundario" id="btn-hoja" target="_blank" rel="noopener" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 9v12"/></svg>
+            Ver hoja de cálculo
+          </a>
+          <button type="button" class="btn btn-primario" id="btn-registrar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Registrar joven
+          </button>
+        </div>
       </div>
 
       <div class="tabla-envoltura">
@@ -136,7 +142,7 @@
           <thead>
             <tr>
               <th>Nombres y apellidos</th>
-              <th>Documento</th>
+              <th class="col-doc">Documento</th>
               <th class="col-opc">Edad</th>
               <th class="col-opc">Acudiente</th>
               <th class="col-opc">Teléfono acudiente</th>
@@ -243,7 +249,13 @@
               <canvas id="firma" width="600" height="160" aria-label="Espacio para firmar"></canvas>
               <span class="firma-ayuda">Firma aquí con el dedo o el mouse</span>
             </div>
-            <button type="button" class="enlace" id="firma-limpiar">Borrar firma</button>
+            <div class="firma-acciones">
+              <label class="enlace" id="firma-subir">
+                <input type="file" accept="image/*" id="firma-input" hidden>
+                Subir imagen de firma
+              </label>
+              <button type="button" class="enlace" id="firma-limpiar">Borrar firma</button>
+            </div>
           </div>
           <label class="campo"><span>Fecha</span><input name="fechaFirma" type="date"></label>
         </div>
@@ -276,6 +288,22 @@
     <button type="button" class="btn btn-secundario" data-cerrar>Cerrar</button>
     <button type="button" class="btn btn-secundario" id="previa-editar" hidden>Editar</button>
     <button type="button" class="btn btn-primario" id="previa-exportar">Exportar</button>
+  </div>
+</dialog>
+
+<!-- ========================== CONFIRMAR ELIMINACIÓN ========================== -->
+<dialog id="dlg-eliminar" class="dialogo">
+  <div class="dialogo-cabeza">
+    <h2>Eliminar joven</h2>
+    <button type="button" class="cerrar" data-cerrar aria-label="Cerrar">×</button>
+  </div>
+  <div class="dialogo-contenido">
+    <p>¿Seguro que quieres eliminar a <strong id="eliminar-nombre"></strong>?</p>
+    <p class="muted pequeño" id="eliminar-detalle">Se borrará su fila de la hoja de cálculo y su PDF, foto y firma irán a la papelera de Google Drive.</p>
+  </div>
+  <div class="dialogo-pie">
+    <button type="button" class="btn btn-secundario" data-cerrar>Cancelar</button>
+    <button type="button" class="btn btn-peligro" id="eliminar-confirmar">Eliminar</button>
   </div>
 </dialog>
 

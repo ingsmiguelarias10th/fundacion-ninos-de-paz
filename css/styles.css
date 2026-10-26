@@ -46,6 +46,9 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 .btn-primario:hover:not(:disabled) { background: var(--verde-osc); }
 .btn-secundario { background: #fff; color: var(--tinta); border-color: var(--borde); }
 .btn-secundario:hover:not(:disabled) { border-color: var(--verde); color: var(--verde); }
+.btn-peligro { background: var(--error); color: #fff; }
+.btn-peligro:hover:not(:disabled) { background: #a23023; }
+a.btn { text-decoration: none; }
 .btn-fantasma { background: transparent; color: var(--tinta); padding: 8px 12px; }
 .btn-fantasma:hover { background: var(--verde-suave); }
 .btn-bloque { width: 100%; margin-top: 6px; }
@@ -135,7 +138,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--verde-claro); ou
 .tabla td { padding: 16px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
 .tabla td:first-child { font-weight: 700; color: var(--tinta); }
 .tabla tbody tr:hover { background: #fbfcf7; }
-.col-acc { width: 110px; }
+.col-acc { width: 150px; }
+.botones-lista { display: flex; gap: 10px; flex-wrap: wrap; }
+.icono-btn.peligro:hover { background: #fdecea; color: var(--error); }
 .acciones { display: flex; gap: 4px; }
 .icono-btn {
   display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px;
@@ -191,7 +196,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--verde-claro); ou
 .firma-caja canvas { display: block; width: 100%; height: auto; aspect-ratio: 600 / 160; touch-action: none; cursor: crosshair; border-radius: 8px; }
 .firma-ayuda { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #aab0bd; font-size: 13px; pointer-events: none; }
 .firma-caja.con-firma .firma-ayuda { display: none; }
-.firma-fecha .enlace { align-self: flex-start; font-size: 14px; }
+.firma-acciones { display: flex; gap: 18px; flex-wrap: wrap; }
+.firma-acciones .enlace { font-size: 14px; }
 .acciones-form {
   position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 12px;
   background: linear-gradient(to top, var(--fondo) 70%, transparent); padding: 16px 0 8px;
@@ -239,9 +245,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--verde-claro); ou
   .titulo-pagina { font-size: 22px; }
   .col-opc { display: none; }
   .tabla td.col-opc { display: none; }
+  .col-doc { display: none; }
   .tabla th, .tabla td { padding: 12px 8px; }
-  .col-acc { width: 84px; }
-  .icono-btn { width: 34px; }
+  .col-acc { width: 112px; }
+  .icono-btn { width: 32px; }
+  .acciones { gap: 2px; }
+  .botones-lista { width: 100%; }
+  .botones-lista .btn { flex: 1 1 100%; }
   .chip-demo { display: none !important; }
   .topbar-acciones .btn { white-space: nowrap; padding: 8px; font-size: 14px; }
   .marca img { height: 34px; }

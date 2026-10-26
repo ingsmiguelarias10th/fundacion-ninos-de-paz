@@ -244,7 +244,21 @@
   async function entrar() {
     if (!Api.remoto) $('.chip-demo').hidden = false;
     mostrarVista('vista-lista');
+    cargarEnlaces();
     await cargarLista();
+  }
+
+  async function cargarEnlaces() {
+    const boton = $('#btn-hoja');
+    boton.hidden = true;
+    if (!Api.remoto) return;
+    try {
+      const e = await Api.enlaces();
+      if (e && /^https:\/\/docs\.google\.com\//.test(e.hoja || '')) {
+        boton.href = e.hoja;
+        boton.hidden = false;
+      }
+    } catch (_) { /* script sin actualizar: el botón queda oculto */ }
   }
 
   async function cargarLista() {
@@ -283,7 +297,7 @@
     for (const r of visibles) {
       const tr = document.createElement('tr');
       const celdas = [
-        [r.nombre, ''], [r.documento, ''], [r.edad ? r.edad + ' años' : '', 'col-opc'],
+        [r.nombre, ''], [r.documento, 'col-doc'], [r.edad ? r.edad + ' años' : '', 'col-opc'],
         [r.acuNombre, 'col-opc'], [r.acuTelefono, 'col-opc']
       ];
       for (const [valor, clase] of celdas) {
@@ -296,9 +310,11 @@
       acc.innerHTML = `<div class="acciones">
         <button type="button" class="icono-btn" data-ver title="Ver y descargar" aria-label="Ver">${icono('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')}</button>
         <button type="button" class="icono-btn" data-editar title="Editar" aria-label="Editar">${icono('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>')}</button>
+        <button type="button" class="icono-btn peligro" data-eliminar title="Eliminar" aria-label="Eliminar">${icono('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>')}</button>
       </div>`;
       $('[data-ver]', acc).addEventListener('click', () => verRegistro(r.id));
       $('[data-editar]', acc).addEventListener('click', () => editarRegistro(r.id));
+      $('[data-eliminar]', acc).addEventListener('click', () => pedirEliminar(r));
       tr.appendChild(acc);
       cuerpo.appendChild(tr);
     }
@@ -344,6 +360,36 @@
     });
     boton('Siguiente', estado.pagina + 1, { desactivado: estado.pagina === paginas });
   }
+
+  let porEliminar = null;
+
+  function pedirEliminar(r) {
+    porEliminar = r;
+    $('#eliminar-nombre').textContent = r.nombre || 'este joven';
+    $('#eliminar-detalle').textContent = Api.remoto
+      ? 'Se borrará su fila de la hoja de cálculo y su PDF, foto y firma irán a la papelera de Google Drive.'
+      : 'Se borrará su registro de este navegador.';
+    $('#dlg-eliminar').showModal();
+  }
+
+  $('#eliminar-confirmar').addEventListener('click', () => {
+    if (!porEliminar) return;
+    const r = porEliminar;
+    conBoton($('#eliminar-confirmar'), async () => {
+      cargando('Eliminando...');
+      try {
+        await Api.eliminar(r.id);
+        $('#dlg-eliminar').close();
+        porEliminar = null;
+        avisar(r.nombre ? `Se eliminó el registro de ${r.nombre}.` : 'Se eliminó el registro.');
+        await cargarLista();
+      } catch (err) {
+        cargando(null);
+        $('#dlg-eliminar').close();
+        manejarError(err);
+      }
+    });
+  });
 
   $('#buscar').addEventListener('input', e => {
     estado.filtro = e.target.value;
@@ -401,6 +447,67 @@
     firma.addEventListener('pointercancel', fin);
     $('#firma-limpiar').addEventListener('click', limpiarFirma);
   })();
+
+  /** Pone una imagen de firma en el recuadro, con el fondo claro vuelto transparente. */
+  function firmaDesdeImagen(archivo) {
+    return new Promise((resolve, reject) => {
+      const lector = new FileReader();
+      lector.onerror = () => reject(new Error('No se pudo leer la imagen de la firma.'));
+      lector.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('El archivo de la firma no es una imagen válida.'));
+        img.onload = () => {
+          const t = document.createElement('canvas');
+          const k = Math.min(1, 1200 / Math.max(img.width, img.height));
+          t.width = Math.max(1, Math.round(img.width * k));
+          t.height = Math.max(1, Math.round(img.height * k));
+          const tc = t.getContext('2d');
+          tc.drawImage(img, 0, 0, t.width, t.height);
+          const datos = tc.getImageData(0, 0, t.width, t.height);
+          const p = datos.data;
+          let x0 = t.width, y0 = t.height, x1 = -1, y1 = -1;
+          for (let i = 0; i < p.length; i += 4) {
+            const luz = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
+            // papel claro a transparente, con borde suave
+            const alfa = luz > 200 ? 0 : luz < 140 ? 255 : Math.round(255 * (200 - luz) / 60);
+            p[i + 3] = Math.min(p[i + 3], alfa);
+            if (p[i + 3] > 40) {
+              const n = i / 4;
+              const x = n % t.width;
+              const y = (n - x) / t.width;
+              if (x < x0) x0 = x;
+              if (x > x1) x1 = x;
+              if (y < y0) y0 = y;
+              if (y > y1) y1 = y;
+            }
+          }
+          if (x1 < 0) return reject(new Error('No se encontró una firma en la imagen. Usa una foto con fondo claro y trazo oscuro.'));
+          tc.putImageData(datos, 0, 0);
+          const w = x1 - x0 + 1;
+          const h = y1 - y0 + 1;
+          limpiarFirma();
+          const margen = 10;
+          const esc = Math.min((firma.width - margen * 2) / w, (firma.height - margen * 2) / h);
+          const dw = w * esc;
+          const dh = h * esc;
+          ctxFirma.drawImage(t, x0, y0, w, h, (firma.width - dw) / 2, (firma.height - dh) / 2, dw, dh);
+          estado.firmaPintada = true;
+          firma.parentElement.classList.add('con-firma');
+          resolve();
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  $('#firma-input').addEventListener('change', async e => {
+    const archivo = e.target.files[0];
+    e.target.value = '';
+    if (!archivo) return;
+    try { await firmaDesdeImagen(archivo); }
+    catch (err) { avisar(err.message, true); }
+  });
 
   function ponerFoto(dataUrl) {
     estado.foto = dataUrl || '';
